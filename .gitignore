@@ -1,0 +1,21 @@
+# Terraform logs
+**.crash.log
+
+# Terraform override files
+**override.tf
+**override.tf.json
+
+
+# Terraform lock files
+**.terraform.lock.hcl
+
+# Terraform directories
+**.terraform/
+
+# Sensitive files
+*.pem
+*.key
+
+# IntelliJ IDEA files
+**.idea/
+**.iml
