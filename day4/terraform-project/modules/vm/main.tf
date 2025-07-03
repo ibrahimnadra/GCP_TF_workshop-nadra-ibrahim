@@ -1,7 +1,7 @@
 # modules/vm/main.tf
 resource "google_compute_instance" "my_vm" {
   name         = var.vm_name
-  zone         = var.vm_name
+  zone         = var.vm_zone
   machine_type = "e2-medium"
 
   boot_disk {

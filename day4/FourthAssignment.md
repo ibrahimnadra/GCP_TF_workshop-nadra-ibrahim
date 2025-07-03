@@ -16,68 +16,79 @@ Modularize and manage Terraform configurations for scalability and collaboration
 ### Task 1. Refactor previous code into a reusable module.
 - Created a directory named `modules` to hold reusable Terraform modules inside the **terraform-project** directory.
 - As per the previous code, there were two resources: a VM and a storage bucket. So removed the VM and storage bucket code from the root **resource.tf** file and deleted the **output.tf** file.
-- Created two subdirectories: `vm` and `storagefolders` inside the `modules` directory.        
+- Created two subdirectories: `vm` and `bucket` inside the `modules` directory.        
   ![terraform_project_structure.png](screenshots/task1/terraform_project_structure.png)
 - Moved the VM configuration code into **modules/vm/main.tf** and the output code into **modules/vm/outputs.tf**.
-```hcl
-# modules/vm/main.tf
-resource "google_compute_instance" "my_vm" {
-  name         = "pi-shaped-demo-vm"
-  zone         = "us-central1-a"
-  machine_type = "e2-medium"
-
-  boot_disk {
-    initialize_params {
-      image = "debian-12-bookworm-v20250610"
+  ```hcl
+  # modules/vm/main.tf
+  resource "google_compute_instance" "my_vm" {
+    name         = "pi-shaped-demo-vm"
+    zone         = "us-central1-a"
+    machine_type = "e2-medium"
+  
+    boot_disk {
+      initialize_params {
+        image = "debian-12-bookworm-v20250610"
+      }
+    }
+  
+    network_interface {
+      network = "default"
+      access_config {}
     }
   }
-
-  network_interface {
-    network = "default"
-    access_config {}
-  }
-}
-```
+  ```
 - Moved the storage bucket configuration code into **modules/bucket/main.tf** and the output code into **modules/bucket/outputs.tf**.
-```hcl
-# modules/bucket/main.tf
-resource "google_storage_bucket" "my_bucket" {
-  name         = "pi-shaped-demo-bucket"
-  location     = "us"
-  storage_class = "standard"
-  uniform_bucket_level_access = true
-}
-```
+  ```hcl
+  # modules/bucket/main.tf
+  resource "google_storage_bucket" "my_bucket" {
+    name         = "pi-shaped-demo-bucket"
+    location     = "us"
+    storage_class = "standard"
+    uniform_bucket_level_access = true
+  }
+  ```
 - Updated the root **resource.tf** file to call these modules.
-```hcl
-module "my_vm" {
-  source = "./modules/vm"
-}
-
-module "my_bucket" {
-  source = "./modules/bucket"
-}
-```
+  ```hcl
+  module "my_vm" {
+    source = "./modules/vm"
+  }
+  
+  module "my_bucket" {
+    source = "./modules/bucket"
+  }
+  ```
 - Run `terraform init` to initialize the modules.
-- Run `terraform plan` to check the changes and ensure that the modules are correctly referenced.
-  ![terraform_plan_for_module.png](screenshots/task1/terraform_plan_for_module.png)
 - Run `terraform apply` to create the resources using the modules.
-- Checked the GCP Console to verify that the VM and storage bucket were created successfully.
+  ![terraform_module_apply.png](screenshots/task1/terraform_module_apply.png)
+- Checked the GCP Console to verify that the VM was created successfully.
+  ![vm_created.png](screenshots/task1/vm_created.png)
+- Checked the GCP Console to verify that the storage bucket was created successfully.
+  ![bucket_created.png](screenshots/task1/bucket_created.png)
 
 ---
 
 ### Task 2. Setup backend for remote state (e.g., GCS bucket)..
-- Created a GCS bucket named `terraform-state-bucket` to store the Terraform state file.
+- Created a GCS bucket named `day4-terraform-state-bucket` to store the Terraform state file.         
+  ![terraform_gcs_bucket.png](screenshots/task2/terraform_gcs_bucket.png)
 - Updated the **provider.tf** file to include the backend configuration for GCS.
+  ```hcl
+  backend "gcs" {
+    bucket = "terraform-state-bucket"
+  }
+  ```
 - Pushed the Terraform state to the remote backend using the command `terraform init -migrate-state`.
+  ![terraform_init_output.png](screenshots/task2/terraform_init_output.png)
 - Verified that the state file was successfully stored in the GCS bucket by checking the GCP Console.
-- Used the command `terraform state list` to view the resources managed by Terraform in the remote state.
-- Ensured that the local state file was no longer present, confirming that the state is now managed remotely.
+  ![terraform_state_file.png](screenshots/task2/terraform_state_file.png)
+- Ensured that the local state file is empty after migrating to the remote backend.
+  ![local_state_file_empty.png](screenshots/task2/local_state_file_empty.png)
 
 ---
 
 ### Task 3. Use input variables for environment-specific configs.
-- Created a **variables.tf** file in each module directory to define input variables for the resources' configurations, providing the default.
+- Created a **variables.tf** file in each module directory to define input variables for the resources' configurations, providing the default.                    
+  ![terraform_variables.png](screenshots/task3/terraform_variables.png)
 - Updated the **modules/vm/main.tf** and **modules/storage-folders/main.tf** files to use these input variables for configurations:
   - Machine name, 
   - Machine zone, 
@@ -86,43 +97,59 @@ module "my_bucket" {
 - Updated the root's **variables.tf** to define input variables for each module, allowing for environment-specific configurations.
 - Updated the module calls in the root **resource.tf** file to pass the module variables as per the environment specific variables defined in the root module's **variables.tf** file.
 - Created values for the variables in a **values.staging.tfvars** file for the staging environment, ensuring that the configurations are tailored to the specific environment.
-- Created a values file named **values.dev.tfvars** for the development environment, ensuring that the configurations are tailored to the specific environment.
+- Created a values file named **values.dev.tfvars** for the development environment, ensuring that the configurations are tailored to the specific environment.           
   ![terraform_project_structure.png](screenshots/task4/terraform_project_structure.png)
-- Used the `terraform plan -var-file="values.dev.tfvars"` command to check the changes for the development environment.
-- Applied the changes and verified that the resources were created with the specified configurations for the development environment.
-- Used the `terraform plan -var-file="values.staging.tfvars"` command to check the changes for the staging environment. **Note**: The plan output should show that the resources will be created with the specified configurations for each environment. That is, the resources created in the development environment are different from those created in the staging environment. And once, these resources will be created, the resources in the development environment will not continue to exist"
-- Applied the changes and verified that the resources were created with the specified configurations for staging environment.
-- Checked the GCP Console to verify that the resources were created with the specified configurations for each environment.
+- Used the `terraform plan -var-file="values.dev.tfvars"` command to check the changes for the development environment and then applied the changes.
+  ![terraform_plan_dev_output.png](screenshots/task3/terraform_plan_dev_output.png)
+- Checked the GCP Console and:
+  - Verified that the VM was created for the development environment.
+    ![vm_created_dev.png](screenshots/task3/vm_created_dev.png)
+  - Verified that the storage bucket for the development environment.
+    ![bucket_created_dev.png](screenshots/task3/bucket_created_dev.png)
+- Used the `terraform plan -var-file="values.staging.tfvars"` command to check the changes for the staging environment. **The plan output shows that the resources in the staging environment will be created and the resources in the development environment will be destroyed.**
+  ![terraform_plan_staging_output.png](screenshots/task3/terraform_plan_staging_output.png)
+- Applied the changes and checked the GCP Console and:
+  - Verified that the VM was created for the staging environment and the VM in the development environment was destroyed.
+    ![vm_created_staging.png](screenshots/task3/vm_created_staging.png)
+  - Verified that the storage bucket was created for the staging environment and the bucket in the development environment was destroyed.
+    ![bucket_created_staging.png](screenshots/task3/bucket_created_staging.png)
+- This modular approach ensures that the Terraform configurations are reusable and maintainable, allowing for easy updates and changes in the future.
 
 ---
 
 ### Task 4. Create dev/staging workspaces.
-- Previously, i faced an issue where the resources created in the development environment were removed when I applied the configurations for the staging environment. This was because both environments were using the same Terraform state file, leading to conflicts and unintended deletions.
-- To resolve this, I used Terraform workspaces to create separate environments for development and staging.
+- **Previously, I faced an issue where the resources created in the development environment were removed when I applied the configurations for the staging environment. This was because both environments were using the same Terraform state file, leading to conflicts and unintended deletions.To resolve this, I used Terraform workspaces to create separate environments for development and staging.**
 - Created a new workspace for development and another for staging.
-```bash
-terraform workspace new dev
-terraform workspace new staging
-```
+  ```bash
+  terraform workspace new dev_workspace
+  terraform workspace new staging_workspace
+  ```
+- Verified that the workspaces were created successfully by running `terraform workspace list`, which showed both the `dev` and `staging` workspaces.
+  ![terraform_workspace_list.png](screenshots/task4/terraform_workspace_list.png)
+- As the current workspace is `staging_workspace`, I used the `terraform plan -var-file="values.staging.tfvars"` command to check the changes for the staging environment.
+  ![terraform_workspace_plan_staging.png](screenshots/task4/terraform_workspace_plan_staging.png)
+- Applied the changes and checked the GCP Console and:
+  - Verified that the VM was created for the staging environment.
+    ![staging_workspace_vm.png](screenshots/task4/staging_workspace_vm.png)
+  - Verified that the storage bucket was created for the staging environment.
+    ![staging_workspace_bucket.png](screenshots/task4/staging_workspace_bucket.png)
 - Switched to the development workspace to apply configurations specific to that environment.
-```bash
-terraform workspace select dev
-```
-- Applied the configurations for the development environment by running `terraform apply -var-file="values.dev.tfvars"`.
-- Switched to the staging workspace to apply configurations specific to that environment.
-```bash
-terraform workspace select staging
-```
-- Checked the environment is different by checking the plan output, it shows that the resources will be created in the staging workspace.
-```bash
-terraform plan -var-file="values.staging.tfvars"
-```
-- Applied the configurations for the staging environment by running `terraform apply -var-file="values.staging.tfvars"`.
-- Checked the GCP Console to verify that resources were created in the respective workspaces.
+  ```bash
+  terraform workspace select dev_workspace
+  ```
+- Used the `terraform plan -var-file="values.dev.tfvars"` command to check the changes for the development environment. **As the state file is now isolated for each workspace, the resources in the staging environment will not be affected by changes made in the development workspace, confirmed by the plan output**
+  ![terraform_workspace_plan_dev.png](screenshots/task4/terraform_workspace_plan_dev.png)
+- Applied the changes and checked the GCP Console and:
+  - Verified that the VM was created for the staging environment.
+    ![dev_workspace_vm.png](screenshots/task4/dev_workspace_vm.png)
+  - Verified that the storage bucket was created for the staging environment.
+    ![dev_workspace_bucket.png](screenshots/task4/dev_workspace_bucket.png)
+- This approach allows for isolated development and staging environments, preventing conflicts and ensuring that changes in one environment do not affect the other.
 
 ---
 
-## Core Concept Questions (Add in README of repo)
+## Core Concept Questions
+
 ### 1. What are the advantages of using Terraform modules in a microservice-oriented product team?
 Using Terraform modules in a microservice-oriented product team offers several advantages:
 1. **Reusability**: Modules allow teams to encapsulate and reuse code across different projects or environments, reducing duplication and improving maintainability.

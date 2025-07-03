@@ -1,6 +1,6 @@
 terraform {
   backend "gcs" {
-    bucket = "terraform-state-bucket"
+    bucket = "day4-terraform-state-bucket"
   }
   required_providers {
     google = {

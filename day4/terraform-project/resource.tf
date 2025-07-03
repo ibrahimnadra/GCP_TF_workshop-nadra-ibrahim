@@ -5,6 +5,6 @@ module "env_vm" {
 }
 
 module "env_bucket" {
-  source = "modules/bucket"
+  source = "./modules/bucket"
   bucket_name = var.env_bucket_name
 }

@@ -1,7 +1,7 @@
 variable "project" {
   description = "The name of the GCP project"
   type        = string
-  default = "app-operations"
+  default = "day4-pi-shaped-workshop-464806"
 }
 
 variable "region" {
