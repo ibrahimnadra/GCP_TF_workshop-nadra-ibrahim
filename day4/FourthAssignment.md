@@ -148,6 +148,30 @@ Modularize and manage Terraform configurations for scalability and collaboration
 
 ---
 
+## Modularization Explanation
+
+Modularization in Terraform involves breaking down infrastructure code into reusable components called modules. Each module encapsulates a specific piece of infrastructure like in this project:
+
+- `/modules/vm`: Contains the configuration for a virtual machine (VM), the input variables for the machine configuration, and the output variables for the VM.
+- `/modules/storagefolders`: Contains the configuration for a storage bucket, the input variables for the bucket configuration, and the output variables for the bucket.
+
+In `resource.tf`, these modules are called with input variables to make them reusable across environments.
+
+This approach promotes:
+- Code reusability, 
+- Consistency and 
+- Maintainability across different environments and projects.
+
+---
+
+## Workspace Explanation
+
+Terraform workspaces allow users to manage multiple instances of the same infrastructure configuration within a single Terraform project. Each workspace maintains its own state file, enabling teams to create isolated environments (e.g., development, staging, production) without needing separate directories or projects.
+It also enables teams to switch contexts easily, making it straightforward to apply changes to different environments as needed. 
+Like in this project, the `dev_workspace` and `staging_workspace` were created to manage the development and staging environments separately, ensuring that changes in one environment do not affect the other.
+This way we had the multiple instances of the same infrastructure configuration, that is, **vm and storage bucket**, in different environments: **dev** and **staging**.
+---
+
 ## Core Concept Questions
 
 ### 1. What are the advantages of using Terraform modules in a microservice-oriented product team?

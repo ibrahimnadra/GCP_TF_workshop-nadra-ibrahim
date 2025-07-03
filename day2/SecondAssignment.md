@@ -91,7 +91,7 @@ Secure GCP resources using IAM roles, policies, and service accounts, following 
 
 ---
 
-## Enforced the principle of the least privilege in role assignments
+## Task 3. Enforced the principle of the least privilege in role assignments
 - Created a custom role with only the necessary permissions for viewing Compute Engine instances and the logs, to avoid over-privileging.
 - Created an IAM policy that grants the custom role to a specific test user, ensuring they can only view VM instances without modification rights.
 - Created a service account for a VM with restricted permissions, allowing it to interact with Compute Engine resources following the least privilege principle.
@@ -100,7 +100,7 @@ Secure GCP resources using IAM roles, policies, and service accounts, following 
 
 ---
 
-## Documented the difference between primitive, predefined, and custom roles
+## Task 4. Documented the difference between primitive, predefined, and custom roles
 
 ### Primitive Roles
 Primitive roles are broad roles that apply to all GCP services, such as Owner, Editor, and Viewer. They provide wide-ranging permissions and are not recommended for production use due to their excessive access.
@@ -113,6 +113,17 @@ This assignment focused on implementing IAM best practices in GCP by creating cu
 
 ---
 
+## Policy explanation
+### Created a new IAM allow policy to grant the custom role to a test user: **tv18072000@gmail.com**
+This policy allows the specified user to have the `ComputeViewer` role, which grants them permissions to view the resources of the project and its associated logs. The user can list and get details of Compute Engine instances and IP addresses, as well as view logs in Cloud Logging. This role is designed to provide read-only access to the Compute Engine resources without allowing any modifications, ensuring that the user can monitor resources without the risk of accidental or malicious changes.
+
+---
+
+## Description of roles used and why
+### Custom Role: ComputeViewer
+The `ComputeViewer` role is a custom role created to provide read-only access to Compute Engine resources. It includes permissions to view VM instances, static and ephemeral IP addresses, and logs in Cloud Logging. This role is designed to adhere to the principle of least privilege by allowing users to monitor resources without granting them the ability to modify or delete them.
+
+---
 ## Core Concept Questions
 
 ### 1. Why is it dangerous to assign Editor role to all users in a production environment?
