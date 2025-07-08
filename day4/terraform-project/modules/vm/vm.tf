@@ -1,4 +1,4 @@
-# modules/vm/main.tf
+# modules/vm/vm.tf
 resource "google_compute_instance" "my_vm" {
   name         = var.vm_name
   zone         = var.vm_zone

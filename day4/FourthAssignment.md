@@ -18,9 +18,9 @@ Modularize and manage Terraform configurations for scalability and collaboration
 - As per the previous code, there were two resources: a VM and a storage bucket. So removed the VM and storage bucket code from the root **resource.tf** file and deleted the **output.tf** file.
 - Created two subdirectories: `vm` and `bucket` inside the `modules` directory.        
   ![terraform_project_structure.png](screenshots/task1/terraform_project_structure.png)
-- Moved the VM configuration code into **modules/vm/main.tf** and the output code into **modules/vm/outputs.tf**.
+- Moved the VM configuration code into **modules/vm/vm.tf** and the output code into **modules/vm/outputs.tf**.
   ```hcl
-  # modules/vm/main.tf
+  # modules/vm/frontend.tf
   resource "google_compute_instance" "my_vm" {
     name         = "pi-shaped-demo-vm"
     zone         = "us-central1-a"
@@ -38,9 +38,9 @@ Modularize and manage Terraform configurations for scalability and collaboration
     }
   }
   ```
-- Moved the storage bucket configuration code into **modules/bucket/main.tf** and the output code into **modules/bucket/outputs.tf**.
+- Moved the storage bucket configuration code into **modules/bucket/bucket.tf** and the output code into **modules/bucket/outputs.tf**.
   ```hcl
-  # modules/bucket/main.tf
+  # modules/bucket/frontend.tf
   resource "google_storage_bucket" "my_bucket" {
     name         = "pi-shaped-demo-bucket"
     location     = "us"
@@ -89,7 +89,7 @@ Modularize and manage Terraform configurations for scalability and collaboration
 ### Task 3. Use input variables for environment-specific configs.
 - Created a **variables.tf** file in each module directory to define input variables for the resources' configurations, providing the default.                    
   ![terraform_variables.png](screenshots/task3/terraform_variables.png)
-- Updated the **modules/vm/main.tf** and **modules/storage-folders/main.tf** files to use these input variables for configurations:
+- Updated the **modules/vm/vm.tf** and **modules/bucket/bucket.tf** files to use these input variables for configurations:
   - Machine name, 
   - Machine zone, 
   - Bucket name and 
