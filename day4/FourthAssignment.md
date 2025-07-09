@@ -170,6 +170,7 @@ Terraform workspaces allow users to manage multiple instances of the same infras
 It also enables teams to switch contexts easily, making it straightforward to apply changes to different environments as needed. 
 Like in this project, the `dev_workspace` and `staging_workspace` were created to manage the development and staging environments separately, ensuring that changes in one environment do not affect the other.
 This way we had the multiple instances of the same infrastructure configuration, that is, **vm and storage bucket**, in different environments: **dev** and **staging**.
+
 ---
 
 ## Core Concept Questions
